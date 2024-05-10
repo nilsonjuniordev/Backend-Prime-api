@@ -4,9 +4,7 @@ import fs from "fs";
 import userRoutes from "./routes/users.js";
 import cors from "cors";
 import nodemailer from 'nodemailer';
-
 import jwt from "jsonwebtoken";
-
 import { db } from "./db.js";
 import { promises as fsPromises } from "fs";
 import path from "path";
@@ -45,6 +43,31 @@ app.delete("/uploads/:userId", async (req, res) => {
   }
 });
 
+
+// Endpoint para deletar todos os caminhos associados ao campo uploadsPathAso
+app.delete("/uploadsAso/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    console.log("DELETE Rota Acessada");
+    console.log("UserID:", userId);
+
+    if (!userId) {
+      return res.status(400).json({ error: "Parâmetros inválidos" });
+    }
+
+    // Atualiza o banco de dados com uploadsPathAso como NULL
+    const updateUserUploadPathAso = "UPDATE user SET uploadsPathAso = NULL WHERE iduser = ?";
+    await db.query(updateUserUploadPathAso, [userId]);
+
+    // Retorne uma resposta de sucesso
+    res.status(200).json({ success: "Exames excluídos com sucesso!" });
+    console.log("Caminhos das imagens removidos com sucesso");
+  } catch (error) {
+    console.error("Erro ao excluir exames:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
 
   // endpoint visualizar upload de arquivos...
 app.get('/uploads/:userId', async (req, res) => {
@@ -192,6 +215,7 @@ const uploadAso = multer({
       cb(null, newFilename);
     }
   }) 
+  
 });
 
 // Rota de upload para uploadsPathAso
